@@ -6,8 +6,7 @@ import com.robotium.solo.*;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.WindowManager;
 
-public class BubbleActivityFloatOffScreen extends
-		ActivityInstrumentationTestCase2<BubbleActivity> {
+public class BubbleActivityFloatOffScreen extends ActivityInstrumentationTestCase2<BubbleActivity> {
 	private Solo solo;
 
 	public BubbleActivityFloatOffScreen() {
@@ -19,8 +18,7 @@ public class BubbleActivityFloatOffScreen extends
 		getInstrumentation().runOnMainSync(new Runnable() {
 			@Override
 			public void run() {
-				getActivity().getWindow().addFlags(
-						WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+				getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 			}
 		});
 	}
@@ -35,8 +33,7 @@ public class BubbleActivityFloatOffScreen extends
 		int shortDelay = 250, delay = 2000;
 
 		// Wait for activity: 'course.labs.TouchLab.BubbleActivity'
-		solo.waitForActivity(course.labs.graphicslab.BubbleActivity.class,
-				delay);
+		solo.waitForActivity(course.labs.graphicslab.BubbleActivity.class, delay);
 
 		// Click on action bar item
 		solo.clickOnActionBarItem(course.labs.graphicslab.R.id.menu_single_speed);
@@ -47,13 +44,10 @@ public class BubbleActivityFloatOffScreen extends
 		solo.clickOnScreen(250.0f, 250.0f);
 
 		// Check whether bubble appears
-		boolean bubbleAppeared = solo.getCurrentViews(
-				course.labs.graphicslab.BubbleActivity.BubbleView.class).size() > 0;
+		boolean bubbleAppeared = solo.getCurrentViews(course.labs.graphicslab.BubbleActivity.BubbleView.class).size() > 0;
 		for (int i = 0; i < 8 && !bubbleAppeared; i++) {
 			solo.sleep(shortDelay);
-			bubbleAppeared = solo.getCurrentViews(
-					course.labs.graphicslab.BubbleActivity.BubbleView.class)
-					.size() > 0;
+			bubbleAppeared = solo.getCurrentViews(course.labs.graphicslab.BubbleActivity.BubbleView.class).size() > 0;
 		}
 
 		// Assert that a bubble was displayed
@@ -65,9 +59,7 @@ public class BubbleActivityFloatOffScreen extends
 		assertEquals(
 				"Bubble hasn't left the screen",
 				0,
-				solo.getCurrentViews(
-						course.labs.graphicslab.BubbleActivity.BubbleView.class)
-						.size());
+				solo.getCurrentViews(course.labs.graphicslab.BubbleActivity.BubbleView.class).size());
 
 	}
 }

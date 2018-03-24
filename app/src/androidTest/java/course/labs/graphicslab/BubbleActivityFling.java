@@ -6,8 +6,7 @@ import com.robotium.solo.*;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.WindowManager;
 
-public class BubbleActivityFling extends
-		ActivityInstrumentationTestCase2<BubbleActivity> {
+public class BubbleActivityFling extends ActivityInstrumentationTestCase2<BubbleActivity> {
 	private Solo solo;
 
 	public BubbleActivityFling() {
@@ -19,8 +18,7 @@ public class BubbleActivityFling extends
 		getInstrumentation().runOnMainSync(new Runnable() {
 			@Override
 			public void run() {
-				getActivity().getWindow().addFlags(
-						WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+				getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 			}
 		});
 	}
@@ -35,8 +33,7 @@ public class BubbleActivityFling extends
 		int delay = 2000;
 
 		// Wait for activity: 'course.labs.TouchLab.BubbleActivity'
-		solo.waitForActivity(course.labs.graphicslab.BubbleActivity.class,
-				delay);
+		solo.waitForActivity(course.labs.graphicslab.BubbleActivity.class, delay);
 
 		solo.clickOnActionBarItem(course.labs.graphicslab.R.id.menu_still_mode);
 
@@ -51,9 +48,7 @@ public class BubbleActivityFling extends
 		assertEquals(
 				"Bubble hasn't appeared",
 				1,
-				solo.getCurrentViews(
-						course.labs.graphicslab.BubbleActivity.BubbleView.class)
-						.size());
+				solo.getCurrentViews(course.labs.graphicslab.BubbleActivity.BubbleView.class).size());
 
 		// Fling the bubble
 		solo.drag(100, 500, 100, 500, 3);
@@ -65,8 +60,6 @@ public class BubbleActivityFling extends
 		assertEquals(
 				"Bubble hasn't left the screen",
 				0,
-				solo.getCurrentViews(
-						course.labs.graphicslab.BubbleActivity.BubbleView.class)
-						.size());
+				solo.getCurrentViews(course.labs.graphicslab.BubbleActivity.BubbleView.class).size());
 	}
 }

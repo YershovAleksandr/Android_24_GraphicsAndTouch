@@ -20,7 +20,9 @@ import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 public class BubbleActivity extends AppCompatActivity {
@@ -79,20 +81,25 @@ public class BubbleActivity extends AppCompatActivity {
 
 		mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
-		mStreamVolume = (float) mAudioManager
-				.getStreamVolume(AudioManager.STREAM_MUSIC)
-				/ mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		mStreamVolume = (float) mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
 
-		// TODO - make a new SoundPool, allowing up to 10 streams 
-		mSoundPool = null;
+		//DO - make a new SoundPool, allowing up to 10 streams
+		mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
 
 
-		// TODO - set a SoundPool OnLoadCompletedListener that calls setupGestureDetector()
-
+		//DO - set a SoundPool OnLoadCompletedListener that calls setupGestureDetector()
+		mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+			@Override
+			public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+				if (0 == status){
+					setupGestureDetector();
+				}
+			}
+		});
 
 		
-		// TODO - load the sound from res/raw/bubble_pop.wav
-		mSoundID = 0;
+		//DO - load the sound from res/raw/bubble_pop.wav
+		mSoundID = mSoundPool.load(this, R.raw.bubble_pop, 1);
 
 	}
 
@@ -111,27 +118,33 @@ public class BubbleActivity extends AppCompatActivity {
 	// Set up GestureDetector
 	private void setupGestureDetector() {
 
-		mGestureDetector = new GestureDetector(this,
-
-		new GestureDetector.SimpleOnGestureListener() {
+		mGestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
 
 			// If a fling gesture starts on a BubbleView then change the
 			// BubbleView's velocity
 
 			@Override
-			public boolean onFling(MotionEvent event1, MotionEvent event2,
-					float velocityX, float velocityY) {
+			public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
 
-				// TODO - Implement onFling actions.
+				//DO - Implement onFling actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
 
+				int n = mFrame.getChildCount();
 
-				
-				
-				
+				for (int i = 0; i < n; i++){
+					BubbleView bv = (BubbleView)mFrame.getChildAt(i);
+
+					if (bv.intersects(event1.getX(), event1.getY())){
+						bv.deflect(velocityX, velocityY);
+
+						Log.i(TAG, "onFling id = " + i);
+
+						return true;
+					}
+				}
+
 				return false;
-
 			}
 
 			// If a single tap intersects a BubbleView, then pop the BubbleView
@@ -141,50 +154,54 @@ public class BubbleActivity extends AppCompatActivity {
 			@Override
 			public boolean onSingleTapConfirmed(MotionEvent event) {
 
-				// TODO - Implement onSingleTapConfirmed actions.
+				//DO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
 
+				int n = mFrame.getChildCount();
+
+				for (int i = 0; i < n; i++) {
+					BubbleView bv = (BubbleView) mFrame.getChildAt(i);
+
+					if (bv.intersects(event.getX(), event.getY())){
+						bv.stop(true);
+
+						Log.i(TAG, "Click id = " + i + " Stop");
+
+						return true;
+					}
+				}
 
 
+				BubbleView bv = new BubbleView(getApplicationContext(), event.getX(), event.getY());
+
+				bv.start();
+
+				mFrame.addView(bv);
+
+				Log.i(TAG, "New n =  " + mFrame.getChildCount() + " Start");
+
 				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				return false;
+				return true;
 			}
 		});
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-
-		// TODO - Delegate the touch to the gestureDetector
-
-		
-		
-		
-		
-		
-		
-		return false;
-	
+		//DO - Delegate the touch to the gestureDetector
+		return mGestureDetector.onTouchEvent(event);
 	}
 
 	@Override
 	protected void onPause() {
 		
-		// TODO - Release all SoundPool resources
-
-
-
-
+		//DO - Release all SoundPool resources
+		if (null != mSoundPool){
+			mSoundPool.unload(mSoundID);
+			mSoundPool.release();
+			mSoundPool = null;
+		}
 
 		super.onPause();
 	}
@@ -238,8 +255,8 @@ public class BubbleActivity extends AppCompatActivity {
 
 			if (speedMode == RANDOM) {
 				
-				// TODO - set rotation in range [1..3]
-				mDRotate = 0;
+				//DO - set rotation in range [1..3]
+				mDRotate = r.nextInt(3) + 1;
 
 
 			} else {
@@ -268,16 +285,12 @@ public class BubbleActivity extends AppCompatActivity {
 
 			default:
 
-				// TODO - Set movement direction and speed
+				//DO - Set movement direction and speed
 				// Limit movement speed in the x and y
 				// direction to [-3..3] pixels per movement.
 
-
-			
-			
-			
-			
-			
+				mDx = r.nextInt(7) - 3;
+				mDy = r.nextInt(7) - 3;
 
 			}
 		}
@@ -288,37 +301,44 @@ public class BubbleActivity extends AppCompatActivity {
 				mScaledBitmapWidth = BITMAP_SIZE * 3;
 			
 			} else {
-				//TODO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
-				mScaledBitmapWidth = 0;
+				//DO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
+				mScaledBitmapWidth = (r.nextInt(3) + 1) * BITMAP_SIZE;
 			
 			}
 
-			// TODO - create the scaled bitmap using size set above
-			mScaledBitmap = null;
+			//DO - create the scaled bitmap using size set above
+			mScaledBitmap = Bitmap.createScaledBitmap(mBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false);
 		}
 
 		// Start moving the BubbleView & updating the display
 		private void start() {
 
 			// Creates a WorkerThread
-			ScheduledExecutorService executor = Executors
-					.newScheduledThreadPool(1);
+			ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 			// Execute the run() in Worker Thread every REFRESH_RATE
 			// milliseconds
 			// Save reference to this job in mMoverFuture
+
+			final BubbleView bv = this;
+
 			mMoverFuture = executor.scheduleWithFixedDelay(new Runnable() {
 				@Override
 				public void run() {
 
-					// TODO - implement movement logic.
+					//DO - implement movement logic.
 					// Each time this method is run the BubbleView should
 					// move one step. If the BubbleView exits the display, 
 					// stop the BubbleView's Worker Thread. 
 					// Otherwise, request that the BubbleView be redrawn. 
 					
 
-					
+					if (!moveWhileOnScreen()){
+						bv.stop(false);
+					}
+					else{
+						bv.postInvalidate();
+					}
 					
 					
 					
@@ -330,15 +350,18 @@ public class BubbleActivity extends AppCompatActivity {
 		// Returns true if the BubbleView intersects position (x,y)
 		private synchronized boolean intersects(float x, float y) {
 
-			// TODO - Return true if the BubbleView intersects position (x,y)
+			//DO - Return true if the BubbleView intersects position (x,y)
+			float dx = (mXPos + mRadius) - x;
+			float dy = (mYPos + mRadius) - y;
 
+			double dist = Math.sqrt((dx * dx) + (dy * dy));
 
-
-
-			
-			
-			
-		    return false;
+			if (dist <= mRadius){
+				return true;
+			}
+			else{
+				return false;
+			}
 		}
 
 		// Cancel the Bubble's movement
@@ -352,18 +375,26 @@ public class BubbleActivity extends AppCompatActivity {
 			}
 
 			// This work will be performed on the UI Thread
+
+			final BubbleView bv = this;
+
 			mFrame.post(new Runnable() {
 				@Override
 				public void run() {
 
-					// TODO - Remove the BubbleView from mFrame
-	
+					//DO - Remove the BubbleView from mFrame
+
+					Log.i(TAG, "Stop pre remove");
+					mFrame.removeView(bv);
+					Log.i(TAG, "Stop post remove");
 					
-					// TODO - If the bubble was popped by user,
+					//DO - If the bubble was popped by user,
 					// play the popping sound
 					if (wasPopped) {
-					
-						
+
+						Log.i(TAG, "Pop pre sound");
+						mSoundPool.play(mSoundID, mStreamVolume, mStreamVolume, 1, 0, 1.0f);
+						Log.i(TAG, "Pop post sound");
 						
 
 					}
@@ -374,11 +405,12 @@ public class BubbleActivity extends AppCompatActivity {
 		// Change the Bubble's speed and direction
 		private synchronized void deflect(float velocityX, float velocityY) {
 
-			//TODO - set mDx and mDy to be the new velocities divided by the REFRESH_RATE
+			//DO - set mDx and mDy to be the new velocities divided by the REFRESH_RATE
 			
 
+			mDx = velocityX / REFRESH_RATE;
 
-
+			mDy = velocityY / REFRESH_RATE;
 
 
 		}
@@ -387,28 +419,29 @@ public class BubbleActivity extends AppCompatActivity {
 		@Override
 		protected synchronized void onDraw(Canvas canvas) {
 
-			// TODO - save the canvas
+			//DO - save the canvas
 
-
-			
-			// TODO - increase the rotation of the original image by mDRotate
-
-
+			canvas.save();
 
 			
-			// TODO Rotate the canvas by current rotation
+			//DO - increase the rotation of the original image by mDRotate
+
+			mRotate += mDRotate;
+
+			
+			//DO Rotate the canvas by current rotation
 			// Hint - Rotate around the bubble's center, not its position
 
-
-
+			canvas.rotate(mRotate, mXPos + mScaledBitmapWidth / 2, mYPos + mScaledBitmapWidth / 2);
+			//canvas.rotate(mRotate);
 			
-			// TODO - draw the bitmap at its new location
+			//DO - draw the bitmap at its new location
 			
-
+			canvas.drawBitmap(mScaledBitmap, mXPos , mYPos, mPainter);
 			
-			// TODO - restore the canvas
+			//DO - restore the canvas
 
-
+			canvas.restore();
 			
 		}
 
@@ -416,21 +449,33 @@ public class BubbleActivity extends AppCompatActivity {
 		// operation
 		private synchronized boolean moveWhileOnScreen() {
 
-			// TODO - Move the BubbleView
+			//DO - Move the BubbleView
 
+			mXPos += mDx;
+			mYPos += mDy;
 
-			return false;
+			if (isOutOfView()){
+				return false;
+			}
+			else{
+				return true;
+			}
 		}
 
 		// Return true if the BubbleView is off the screen after the move
 		// operation
 		private boolean isOutOfView() {
 
-			// TODO - Return true if the BubbleView is off the screen after
+			//DO - Return true if the BubbleView is off the screen after
 			// the move operation
 
-
-			return false;
+			if (mXPos < 0 - mScaledBitmapWidth || mXPos > mDisplayWidth + mScaledBitmapWidth ||
+					mYPos < 0 - mScaledBitmapWidth || mYPos > mDisplayWidth + mScaledBitmapWidth){
+				return true;
+			}
+			else{
+				return false;
+			}
 		}
 	}
 

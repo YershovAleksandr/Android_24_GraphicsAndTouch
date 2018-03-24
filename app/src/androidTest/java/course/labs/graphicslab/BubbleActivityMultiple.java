@@ -6,8 +6,7 @@ import com.robotium.solo.*;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.WindowManager;
 
-public class BubbleActivityMultiple extends
-		ActivityInstrumentationTestCase2<BubbleActivity> {
+public class BubbleActivityMultiple extends	ActivityInstrumentationTestCase2<BubbleActivity> {
 	private Solo solo;
 
 	public BubbleActivityMultiple() {
@@ -19,8 +18,7 @@ public class BubbleActivityMultiple extends
 		getInstrumentation().runOnMainSync(new Runnable() {
 			@Override
 			public void run() {
-				getActivity().getWindow().addFlags(
-						WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+				getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 			}
 		});
 
@@ -66,8 +64,6 @@ public class BubbleActivityMultiple extends
 		assertEquals(
 				"There should be two bubbles on the screen",
 				2,
-				solo.getCurrentViews(
-						course.labs.graphicslab.BubbleActivity.BubbleView.class)
-						.size());
+				solo.getCurrentViews(course.labs.graphicslab.BubbleActivity.BubbleView.class).size());
 	}
 }
