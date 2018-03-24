@@ -10,7 +10,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -23,9 +26,12 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 public class BubbleActivity extends AppCompatActivity {
+
+	private static boolean hack42 = true;
 
 	// These variables are for testing purposes, do not modify
 	private final static int RANDOM = 0;
@@ -118,6 +124,8 @@ public class BubbleActivity extends AppCompatActivity {
 	// Set up GestureDetector
 	private void setupGestureDetector() {
 
+	    Log.i(TAG, "setupGestureDetector n = " + mFrame.getChildCount());
+
 		mGestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
 
 			// If a fling gesture starts on a BubbleView then change the
@@ -129,6 +137,8 @@ public class BubbleActivity extends AppCompatActivity {
 				//DO - Implement onFling actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
+
+                Log.i(TAG, "getX = " + event1.getX() + " getY = " + event1.getY());
 
 				int n = mFrame.getChildCount();
 
@@ -157,8 +167,21 @@ public class BubbleActivity extends AppCompatActivity {
 				//DO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
-
+               // mSoundPool.play(mSoundID, mStreamVolume, mStreamVolume, 1, 0, 1.0f);
 				int n = mFrame.getChildCount();
+                Log.i(TAG, "getX = " + event.getX() + " getY = " + event.getY());
+
+                /*if (hack42){
+                    ShapeDrawable sp = new ShapeDrawable(new OvalShape());
+                    sp.getPaint().setColor(Color.RED);
+                    sp.setIntrinsicWidth(64);
+                    sp.setIntrinsicHeight(64);
+                    //sp.setAlpha(255);
+                    ImageView spiv = new ImageView(getApplicationContext());
+                    spiv.setImageDrawable(sp);
+
+                    mFrame.addView(spiv);
+                }*/
 
 				for (int i = 0; i < n; i++) {
 					BubbleView bv = (BubbleView) mFrame.getChildAt(i);
@@ -179,7 +202,7 @@ public class BubbleActivity extends AppCompatActivity {
 
 				mFrame.addView(bv);
 
-				Log.i(TAG, "New n =  " + mFrame.getChildCount() + " Start");
+				//Log.i(TAG, "New n =  " + mFrame.getChildCount() + " Start");
 
 				
 				return true;
@@ -240,6 +263,9 @@ public class BubbleActivity extends AppCompatActivity {
 			// Adjust position to center the bubble under user's finger
 			mXPos = x - mRadius;
 			mYPos = y - mRadius;
+
+           // mXPos = x - mRadius;
+            mYPos = y - mScaledBitmapWidth;
 
 			// Set the BubbleView's speed and direction
 			setSpeedAndDirection(r);
@@ -306,12 +332,15 @@ public class BubbleActivity extends AppCompatActivity {
 			
 			}
 
+            //mScaledBitmapWidth = BITMAP_SIZE * 3;
 			//DO - create the scaled bitmap using size set above
 			mScaledBitmap = Bitmap.createScaledBitmap(mBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false);
 		}
 
 		// Start moving the BubbleView & updating the display
 		private void start() {
+
+            Log.i(TAG, "Start");
 
 			// Creates a WorkerThread
 			ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
@@ -339,10 +368,6 @@ public class BubbleActivity extends AppCompatActivity {
 					else{
 						bv.postInvalidate();
 					}
-					
-					
-					
-
 				}
 			}, 0, REFRESH_RATE, TimeUnit.MILLISECONDS);
 		}
@@ -351,8 +376,8 @@ public class BubbleActivity extends AppCompatActivity {
 		private synchronized boolean intersects(float x, float y) {
 
 			//DO - Return true if the BubbleView intersects position (x,y)
-			float dx = (mXPos + mRadius) - x;
-			float dy = (mYPos + mRadius) - y;
+			float dx = (mXPos + 2 * mRadius) - x;
+			float dy = (mYPos + 2 * mRadius) - y;
 
 			double dist = Math.sqrt((dx * dx) + (dy * dy));
 
@@ -384,17 +409,17 @@ public class BubbleActivity extends AppCompatActivity {
 
 					//DO - Remove the BubbleView from mFrame
 
-					Log.i(TAG, "Stop pre remove");
+					//Log.i(TAG, "Stop pre remove");
 					mFrame.removeView(bv);
-					Log.i(TAG, "Stop post remove");
+					//Log.i(TAG, "Stop post remove");
 					
 					//DO - If the bubble was popped by user,
 					// play the popping sound
 					if (wasPopped) {
 
-						Log.i(TAG, "Pop pre sound");
+						//Log.i(TAG, "Pop pre sound");
 						mSoundPool.play(mSoundID, mStreamVolume, mStreamVolume, 1, 0, 1.0f);
-						Log.i(TAG, "Pop post sound");
+						//Log.i(TAG, "Pop post sound");
 						
 
 					}
